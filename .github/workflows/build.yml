@@ -1,0 +1,108 @@
+name: Build SwiftGram Android
+
+on:
+  workflow_dispatch:
+  push:
+    branches: [ master ]
+
+permissions:
+  contents: write
+
+concurrency:
+  group: build-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    timeout-minutes: 350
+
+    steps:
+      - name: Checkout source and submodules
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive
+          fetch-depth: 1
+
+      - name: Set up JDK 21
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '21'
+
+      - name: Set up Android SDK
+        uses: android-actions/setup-android@v3
+        with:
+          packages: 'platforms;android-36 build-tools;36.0.0 ndk;27.2.12479018 cmake;3.22.1'
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Show build environment
+        run: |
+          java -version
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/ndk"
+          free -h
+          nproc
+
+      - name: Inject API credentials
+        env:
+          API_ID: ${{ secrets.API_ID }}
+          API_HASH: ${{ secrets.API_HASH }}
+        run: |
+          python3 - <<'PY'
+          import os, re
+          path = 'TMessagesProj/src/main/java/org/telegram/messenger/BuildVars.java'
+          src = open(path, encoding='utf-8').read()
+          api_id = (os.environ.get('API_ID') or '').strip()
+          api_hash = (os.environ.get('API_HASH') or '').strip()
+          if api_id:
+              src = re.sub(r'public static int APP_ID = \d+;',
+                           'public static int APP_ID = %d;' % int(api_id), src)
+          if api_hash:
+              src = re.sub(r'public static String APP_HASH = "[^"]*";',
+                           'public static String APP_HASH = "%s";' % api_hash, src)
+          open(path, 'w', encoding='utf-8').write(src)
+          print('API_ID injected:', bool(api_id), '| API_HASH injected:', bool(api_hash))
+          PY
+
+      - name: Prepare signing key
+        env:
+          KEYSTORE_BASE64: ${{ secrets.KEYSTORE_BASE64 }}
+          KEYSTORE_PASSWORD: ${{ secrets.KEYSTORE_PASSWORD }}
+          KEY_ALIAS: ${{ secrets.KEY_ALIAS }}
+          KEY_PASSWORD: ${{ secrets.KEY_PASSWORD }}
+        run: |
+          if [ -n "$KEYSTORE_BASE64" ]; then
+            printf '%s' "$KEYSTORE_BASE64" | base64 -d > TMessagesProj/config/release.keystore
+            {
+              echo "ORG_GRADLE_PROJECT_RELEASE_STORE_PASSWORD=$KEYSTORE_PASSWORD"
+              echo "ORG_GRADLE_PROJECT_RELEASE_KEY_ALIAS=$KEY_ALIAS"
+              echo "ORG_GRADLE_PROJECT_RELEASE_KEY_PASSWORD=$KEY_PASSWORD"
+            } >> "$GITHUB_ENV"
+            echo "Using the project keystore from secrets"
+          else
+            echo "No keystore secret, using the test keystore committed to the repository"
+          fi
+
+      - name: Build release APK
+        run: |
+          ./gradlew :TMessagesProj_App:assembleAfatRelease \
+            --stacktrace \
+            -Dorg.gradle.jvmargs="-Xmx5g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8"
+
+      - name: Collect APK
+        run: |
+          find TMessagesProj_App/build/outputs -type f -name '*.apk' -print -exec ls -lh {} \;
+          mkdir -p out
+          find TMessagesProj_App/build/outputs -type f -name '*.apk' -exec cp {} out/ \;
+          sha256sum out/*.apk
+
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: SwiftGram-Android
+          path: out/*.apk
+          if-no-files-found: error
+          compression-level: 0
