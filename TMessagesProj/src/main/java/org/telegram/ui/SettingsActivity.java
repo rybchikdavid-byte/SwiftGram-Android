@@ -1022,6 +1022,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         final Context context = getParentActivity();
         LinearLayout layout = new LinearLayout(context);
         layout.setOrientation(LinearLayout.VERTICAL);
+        layout.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
 
         TextView about = new TextView(context);
         about.setText(getString(R.string.SwiftGramAboutInfo));
