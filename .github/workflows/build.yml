@@ -115,7 +115,8 @@ jobs:
       - name: Verify APK
         run: |
           BT="$ANDROID_HOME/build-tools/36.0.0"
-          "$BT/aapt" dump badging out/app.apk | head -8
+          "$BT/aapt" dump badging out/app.apk | head -4
+          "$BT/aapt" dump badging out/app.apk | grep -E "^application-label:|^native-code:"
           "$BT/apksigner" verify --verbose --print-certs out/app.apk
 
       - name: Upload APK
