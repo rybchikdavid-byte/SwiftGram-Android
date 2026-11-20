@@ -83,6 +83,7 @@ import org.telegram.messenger.SharedConfig;
 import org.telegram.messenger.SharedPrefsHelper;
 import org.telegram.utils.glass.BaseFragmentSimpleGlass;
 import org.telegram.ui.Cells.TextCell;
+import org.telegram.ui.Cells.TextCheckCell;
 import org.telegram.ui.Wallet.GramWallet;
 import org.telegram.ui.Wallet.WalletActivity;
 import org.telegram.utils.settings.SharedSettings;
@@ -836,6 +837,10 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         if (items.get(items.size() - 1).viewType != UniversalAdapter.VIEW_TYPE_SHADOW)
             items.add(UItem.asShadow(null));
 
+        items.add(UItem.asHeader(getString(R.string.SwiftGram)));
+        items.add(SettingCell.Factory.of(100, 0xFFFFA630, 0xFFFF3B1F, R.drawable.settings_features, getString(R.string.SwiftGram), getString(R.string.SwiftGramSettingsInfo)));
+        items.add(UItem.asShadow(null));
+
         items.add(UItem.asHeader(getString(R.string.SettingsHelp)));
         items.add(SettingCell.Factory.of(17, IconBackgroundColors.ORANGE.top, IconBackgroundColors.ORANGE.bottom, R.drawable.settings_ask, getString(R.string.AskAQuestion)));
         items.add(SettingCell.Factory.of(18, IconBackgroundColors.BLUE_LIGHT.top, IconBackgroundColors.BLUE_LIGHT.bottom, R.drawable.settings_faq, getString(R.string.TelegramFAQ)));
@@ -1003,7 +1008,67 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
                 presentFragment(new HeaderSettingsActivity());
                 break;
             }
+            case 100: {
+                showSwiftGramSettings();
+                break;
+            }
         }
+    }
+
+    private void showSwiftGramSettings() {
+        if (getParentActivity() == null) {
+            return;
+        }
+        final Context context = getParentActivity();
+        LinearLayout layout = new LinearLayout(context);
+        layout.setOrientation(LinearLayout.VERTICAL);
+
+        TextView about = new TextView(context);
+        about.setText(getString(R.string.SwiftGramAboutInfo));
+        about.setTextSize(14);
+        about.setTextColor(Theme.getColor(Theme.key_dialogTextGray2));
+        about.setPadding(dp(24), dp(10), dp(24), dp(10));
+        layout.addView(about, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+        TextCheckCell noAds = new TextCheckCell(context);
+        noAds.setTextAndCheck(getString(R.string.SwiftGramNoAds), SharedSettings.swiftgramNoAds.get(), true);
+        noAds.setOnClickListener(v -> noAds.setChecked(SharedSettings.swiftgramNoAds.toggle()));
+        layout.addView(noAds, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+        TextCheckCell mentions = new TextCheckCell(context);
+        mentions.setTextAndCheck(getString(R.string.SwiftGramDisableMentions), SharedSettings.swiftgramDisableMentions.get(), true);
+        mentions.setOnClickListener(v -> mentions.setChecked(SharedSettings.swiftgramDisableMentions.toggle()));
+        layout.addView(mentions, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+        TextCheckCell filter = new TextCheckCell(context);
+        filter.setTextAndCheck(getString(R.string.SwiftGramMessageFilter), SharedSettings.swiftgramMessageFilter.get(), true);
+        filter.setOnClickListener(v -> filter.setChecked(SharedSettings.swiftgramMessageFilter.toggle()));
+        layout.addView(filter, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+        TextCell words = new TextCell(context);
+        String wordsValue = SharedSettings.swiftgramMessageFilterWords.get();
+        words.setTextAndValue(getString(R.string.SwiftGramFilterWords), TextUtils.isEmpty(wordsValue) ? getString(R.string.None) : wordsValue, false);
+        words.setOnClickListener(v -> AlertsCreator.createSimpleTextInputAlert(
+                getParentActivity(), this,
+                getString(R.string.SwiftGramFilterWords),
+                getString(R.string.SwiftGramFilterWordsInfo),
+                "spam, promo",
+                SharedSettings.swiftgramMessageFilterWords.get(),
+                500,
+                getString(R.string.Done),
+                getResourceProvider(),
+                value -> {
+                    SharedSettings.swiftgramMessageFilterWords.set(value);
+                    words.setTextAndValue(getString(R.string.SwiftGramFilterWords), value, false);
+                }
+        ));
+        layout.addView(words, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(context, resourceProvider);
+        builder.setTitle(getString(R.string.SwiftGram));
+        builder.setView(layout);
+        builder.setPositiveButton(getString(R.string.Done), null);
+        showDialog(builder.create());
     }
 
     private boolean onLongClick(UItem item, View view, int position, float x, float y) {

@@ -43,6 +43,18 @@ public final class SharedSettings {
     public static final EnumSetting<SimpleActionBarDoneButton.Shape> headerDoneButtonShape =
         EnumSetting.of("header_done_button_shape", SimpleActionBarDoneButton.Shape.TEXT);
 
+    public static final BooleanSetting swiftgramNoAds =
+        BooleanSetting.of("swiftgram_no_ads", true);
+
+    public static final BooleanSetting swiftgramDisableMentions =
+        BooleanSetting.of("swiftgram_disable_mentions", false);
+
+    public static final BooleanSetting swiftgramMessageFilter =
+        BooleanSetting.of("swiftgram_message_filter", false);
+
+    public static final StringSetting swiftgramMessageFilterWords =
+        StringSetting.of("swiftgram_message_filter_words", "");
+
     private SharedSettings() {
     }
 }

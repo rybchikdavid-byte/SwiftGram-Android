@@ -84,6 +84,7 @@ import org.telegram.ui.PopupNotificationActivity;
 import org.telegram.ui.Stories.recorder.StoryEntry;
 import org.telegram.ui.Wallet.GramWallet;
 
+import org.telegram.utils.settings.SharedSettings;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.util.ArrayList;
@@ -1251,6 +1252,12 @@ public class NotificationsController extends BaseController implements Notificat
                     }
                     if (BuildVars.LOGS_ENABLED) {
                         FileLog.d("skipped message because chat is already opened (openedDialogId = " + openedDialogId + ")");
+                    }
+                    continue;
+                }
+                if (shouldSkipSwiftGramNotification(messageObject, originalDialogId)) {
+                    if (BuildVars.LOGS_ENABLED) {
+                        FileLog.d("skipped message because of SwiftGram filter");
                     }
                     continue;
                 }
@@ -3319,6 +3326,28 @@ public class NotificationsController extends BaseController implements Notificat
     private boolean isPersonalMessage(MessageObject messageObject) {
         return messageObject.messageOwner.peer_id != null && messageObject.messageOwner.peer_id.chat_id == 0 && messageObject.messageOwner.peer_id.channel_id == 0
                 && (messageObject.messageOwner.action == null || messageObject.messageOwner.action instanceof TLRPC.TL_messageActionEmpty) || messageObject.isStoryReactionPush;
+    }
+
+    private boolean shouldSkipSwiftGramNotification(MessageObject messageObject, long dialogId) {
+        if (SharedSettings.swiftgramDisableMentions.get()
+                && DialogObject.isChatDialog(dialogId)
+                && (messageObject.messageOwner.mentioned || messageObject.messageOwner.reply_to_msg_id != 0)) {
+            return true;
+        }
+        if (SharedSettings.swiftgramMessageFilter.get()) {
+            String words = SharedSettings.swiftgramMessageFilterWords.get();
+            String text = messageObject.messageOwner.message;
+            if (!TextUtils.isEmpty(words) && !TextUtils.isEmpty(text)) {
+                String lower = text.toLowerCase();
+                for (String word : words.split("[,;\\n]")) {
+                    word = word.trim().toLowerCase();
+                    if (word.length() > 0 && lower.contains(word)) {
+                        return true;
+                    }
+                }
+            }
+        }
+        return false;
     }
 
     private int getNotifyOverride(SharedPreferences preferences, long dialog_id, long topicId) {

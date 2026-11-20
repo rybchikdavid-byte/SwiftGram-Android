@@ -2,6 +2,14 @@
 <resources>
     <string name="AppName">SwiftGram</string>
     <string name="AppNameBeta">SwiftGram Beta</string>
+    <string name="SwiftGram">SwiftGram</string>
+    <string name="SwiftGramAboutInfo">SwiftGram Android is built on the official Telegram Android engine. It adds up to 10 accounts, no sponsored messages and notification filters.</string>
+    <string name="SwiftGramNoAds">Disable sponsored messages</string>
+    <string name="SwiftGramDisableMentions">Silence mentions and replies</string>
+    <string name="SwiftGramMessageFilter">Message filter</string>
+    <string name="SwiftGramFilterWords">Filter words</string>
+    <string name="SwiftGramFilterWordsInfo">Separate words with commas. Notifications for messages containing any of them will be hidden.</string>
+    <string name="SwiftGramSettingsInfo">Message filter, notifications and accounts</string>
     <string name="LanguageName">English</string>
     <string name="English">English</string>
     <string name="LanguageNameInEnglish">English</string>
