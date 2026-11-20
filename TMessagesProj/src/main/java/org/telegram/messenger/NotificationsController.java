@@ -3331,7 +3331,8 @@ public class NotificationsController extends BaseController implements Notificat
     private boolean shouldSkipSwiftGramNotification(MessageObject messageObject, long dialogId) {
         if (SharedSettings.swiftgramDisableMentions.get()
                 && DialogObject.isChatDialog(dialogId)
-                && (messageObject.messageOwner.mentioned || messageObject.messageOwner.reply_to_msg_id != 0)) {
+                && (messageObject.messageOwner.mentioned
+                    || (messageObject.messageOwner.reply_to != null && messageObject.messageOwner.reply_to.reply_to_msg_id != 0))) {
             return true;
         }
         if (SharedSettings.swiftgramMessageFilter.get()) {

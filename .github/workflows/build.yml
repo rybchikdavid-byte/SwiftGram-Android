@@ -2,6 +2,11 @@ name: Build SwiftGram Android
 
 on:
   workflow_dispatch:
+    inputs:
+      task:
+        description: 'Gradle task (empty = full release APK)'
+        required: false
+        default: ''
   push:
     branches: [ master ]
 
@@ -100,12 +105,17 @@ jobs:
           PY
 
       - name: Build release APK
+        env:
+          TASK: ${{ github.event.inputs.task }}
         run: |
-          ./gradlew :TMessagesProj_App:assembleAfatRelease \
+          TASK="${TASK:-:TMessagesProj_App:assembleAfatRelease}"
+          echo "Gradle task: $TASK"
+          ./gradlew "$TASK" \
             --stacktrace \
             -Dorg.gradle.jvmargs="-Xmx5g -XX:MaxMetaspaceSize=1g -Dfile.encoding=UTF-8"
 
       - name: Collect APK
+        if: ${{ github.event.inputs.task == '' }}
         run: |
           find TMessagesProj_App/build/outputs -type f -name '*.apk' -print -exec ls -lh {} \;
           mkdir -p out
@@ -113,6 +123,7 @@ jobs:
           sha256sum out/*.apk
 
       - name: Verify APK
+        if: ${{ github.event.inputs.task == '' }}
         run: |
           BT="$ANDROID_HOME/build-tools/36.0.0"
           "$BT/aapt" dump badging out/app.apk | head -4
@@ -120,6 +131,7 @@ jobs:
           "$BT/apksigner" verify --verbose --print-certs out/app.apk
 
       - name: Upload APK
+        if: ${{ github.event.inputs.task == '' }}
         uses: actions/upload-artifact@v4
         with:
           name: SwiftGram-Android
