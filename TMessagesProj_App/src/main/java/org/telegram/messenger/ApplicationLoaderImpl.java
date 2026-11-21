@@ -13,6 +13,12 @@ public class ApplicationLoaderImpl extends ApplicationLoader {
     }
 
     @Override
+    public void onCreate() {
+        super.onCreate();
+        SwiftGramCrashHandler.mark("app-created");
+    }
+
+    @Override
     protected String onGetApplicationId() {
         return BuildConfig.APPLICATION_ID;
     }

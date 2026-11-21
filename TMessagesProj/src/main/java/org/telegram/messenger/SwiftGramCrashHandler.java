@@ -39,7 +39,9 @@ public final class SwiftGramCrashHandler {
         if (context == null) {
             return;
         }
-        appContext = context.getApplicationContext();
+        // During attachBaseContext getApplicationContext() is still null, and
+        // the base context itself is a perfectly usable Context.
+        appContext = context;
         if (installed) {
             return;
         }
@@ -69,6 +71,15 @@ public final class SwiftGramCrashHandler {
         });
         try {
             write(START_FILE, "SwiftGram started\napp: " + appVersion() + "\ntime: "
+                    + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(new Date()) + "\n", false);
+        } catch (Throwable ignored) {
+        }
+    }
+
+    /** Leaves a breadcrumb so a crash can be narrowed down to a startup phase. */
+    public static void mark(String name) {
+        try {
+            write("SwiftGram-" + name + ".txt", "SwiftGram " + name + "\napp: " + appVersion() + "\ntime: "
                     + new SimpleDateFormat("yyyy-MM-dd HH:mm:ss", Locale.US).format(new Date()) + "\n", false);
         } catch (Throwable ignored) {
         }
