@@ -1025,7 +1025,12 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         layout.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
 
         TextView about = new TextView(context);
-        about.setText(getString(R.string.SwiftGramAboutInfo));
+        String swiftGramVersion = "";
+        try {
+            swiftGramVersion = context.getPackageManager().getPackageInfo(context.getPackageName(), 0).versionName;
+        } catch (Exception ignore) {
+        }
+        about.setText(getString(R.string.SwiftGramAboutInfo) + (TextUtils.isEmpty(swiftGramVersion) ? "" : "\n\n" + getString(R.string.SwiftGram) + " " + swiftGramVersion));
         about.setTextSize(14);
         about.setTextColor(Theme.getColor(Theme.key_dialogTextGray2));
         about.setPadding(dp(24), dp(10), dp(24), dp(10));
