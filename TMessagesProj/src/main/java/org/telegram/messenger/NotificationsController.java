@@ -4368,7 +4368,7 @@ public class NotificationsController extends BaseController implements Notificat
 
             String detailText;
             if (allowSummary) {
-                if (UserConfig.getActivatedAccountsCount() > 1) {
+                if (!SharedSettings.swiftgramHideAccountInNotifications.get() && UserConfig.getActivatedAccountsCount() > 1) {
                     if (pushDialogs.size() == 1) {
                         detailText = UserObject.getFirstName(getUserConfig().getCurrentUser());
                     } else {

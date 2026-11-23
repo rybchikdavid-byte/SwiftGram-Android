@@ -58,6 +58,7 @@ import org.telegram.ui.Components.JoinCallByUrlAlert;
 import org.telegram.ui.Components.LayoutHelper;
 import org.telegram.ui.GroupCallActivity;
 import org.telegram.ui.LaunchActivity;
+import org.telegram.utils.settings.SharedSettings;
 
 import java.io.File;
 import java.util.ArrayList;
@@ -103,8 +104,24 @@ public class VoIPHelper {
 			return;
 		}
 
+		if (SharedSettings.swiftgramCallConfirmation.get()) {
+			// Swiftgram: Settings.CallConfirmation
+			AlertDialog.Builder builder = new AlertDialog.Builder(activity);
+			builder.setTitle(LocaleController.getString(videoCall ? R.string.SwiftGramCallConfirmationVideoTitle : R.string.SwiftGramCallConfirmationAudioTitle));
+			builder.setPositiveButton(LocaleController.getString(R.string.OK), (dialog, which) -> startCallConfirmed(user, videoCall, canVideoCall, activity, userFull, accountInstance));
+			builder.setNegativeButton(LocaleController.getString(R.string.Cancel), null);
+			try {
+				builder.show();
+			} catch (Exception e) {
+				FileLog.e(e);
+			}
+			return;
+		}
+		startCallConfirmed(user, videoCall, canVideoCall, activity, userFull, accountInstance);
+	}
+
+	private static void startCallConfirmed(TLRPC.User user, boolean videoCall, boolean canVideoCall, final Activity activity, TLRPC.UserFull userFull, AccountInstance accountInstance) {
 		if (Build.VERSION.SDK_INT >= 23) {
-			int code;
 			ArrayList<String> permissions = new ArrayList<>();
 			if (activity.checkSelfPermission(Manifest.permission.RECORD_AUDIO) != PackageManager.PERMISSION_GRANTED) {
 				permissions.add(Manifest.permission.RECORD_AUDIO);

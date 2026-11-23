@@ -55,6 +55,28 @@ public final class SharedSettings {
     public static final StringSetting swiftgramMessageFilterWords =
         StringSetting.of("swiftgram_message_filter_words", "");
 
+    // Ported from Swiftgram for iOS (Swiftgram/SGSimpleSettings, SGSettingsController).
+    public static final BooleanSetting swiftgramShowProfileID =
+        BooleanSetting.of("swiftgram_show_profile_id", false);
+
+    public static final BooleanSetting swiftgramHideStories =
+        BooleanSetting.of("swiftgram_hide_stories", false);
+
+    public static final BooleanSetting swiftgramHideAccountInNotifications =
+        BooleanSetting.of("swiftgram_hide_account_in_notifications", false);
+
+    public static final BooleanSetting swiftgramSecondsInMessages =
+        BooleanSetting.of("swiftgram_seconds_in_messages", false);
+
+    public static final BooleanSetting swiftgramHideReactions =
+        BooleanSetting.of("swiftgram_hide_reactions", false);
+
+    public static final BooleanSetting swiftgramHidePhone =
+        BooleanSetting.of("swiftgram_hide_phone", false);
+
+    public static final BooleanSetting swiftgramCallConfirmation =
+        BooleanSetting.of("swiftgram_call_confirmation", false);
+
     private SharedSettings() {
     }
 }

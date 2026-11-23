@@ -49,6 +49,7 @@ import android.widget.EditText;
 import android.widget.FrameLayout;
 import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 
@@ -86,6 +87,7 @@ import org.telegram.ui.Cells.TextCell;
 import org.telegram.ui.Cells.TextCheckCell;
 import org.telegram.ui.Wallet.GramWallet;
 import org.telegram.ui.Wallet.WalletActivity;
+import org.telegram.utils.settings.BooleanSetting;
 import org.telegram.utils.settings.SharedSettings;
 import org.telegram.messenger.UserConfig;
 import org.telegram.messenger.UserObject;
@@ -530,7 +532,7 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         avatarView.setForUserOrChat(user, avatarDrawable);
         titleView.setText(UserObject.getUserName(user));
         final StringBuilder sb = new StringBuilder();
-        if (user != null) {
+        if (user != null && !SharedSettings.swiftgramHidePhone.get()) {
             sb.append(PhoneFormat.getInstance().format("+" + user.phone));
         }
         final String username = UserObject.getPublicUsername(user);
@@ -1036,20 +1038,8 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         about.setPadding(dp(24), dp(10), dp(24), dp(10));
         layout.addView(about, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
-        TextCheckCell noAds = new TextCheckCell(context);
-        noAds.setTextAndCheck(getString(R.string.SwiftGramNoAds), SharedSettings.swiftgramNoAds.get(), true);
-        noAds.setOnClickListener(v -> noAds.setChecked(SharedSettings.swiftgramNoAds.toggle()));
-        layout.addView(noAds, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
-
-        TextCheckCell mentions = new TextCheckCell(context);
-        mentions.setTextAndCheck(getString(R.string.SwiftGramDisableMentions), SharedSettings.swiftgramDisableMentions.get(), true);
-        mentions.setOnClickListener(v -> mentions.setChecked(SharedSettings.swiftgramDisableMentions.toggle()));
-        layout.addView(mentions, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
-
-        TextCheckCell filter = new TextCheckCell(context);
-        filter.setTextAndCheck(getString(R.string.SwiftGramMessageFilter), SharedSettings.swiftgramMessageFilter.get(), true);
-        filter.setOnClickListener(v -> filter.setChecked(SharedSettings.swiftgramMessageFilter.toggle()));
-        layout.addView(filter, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+        addSwiftGramHeader(layout, context, getString(R.string.SwiftGramSectionChats));
+        addSwiftGramToggle(layout, context, R.string.SwiftGramMessageFilter, SharedSettings.swiftgramMessageFilter);
 
         TextCell words = new TextCell(context);
         String wordsValue = SharedSettings.swiftgramMessageFilterWords.get();
@@ -1070,11 +1060,55 @@ public class SettingsActivity extends BaseFragment implements NotificationCenter
         ));
         layout.addView(words, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
 
+        addSwiftGramHeader(layout, context, getString(R.string.SwiftGramSectionProfiles));
+        addSwiftGramToggle(layout, context, R.string.SwiftGramShowProfileID, SharedSettings.swiftgramShowProfileID);
+
+        addSwiftGramHeader(layout, context, getString(R.string.SwiftGramSectionStories));
+        addSwiftGramToggle(layout, context, R.string.SwiftGramHideStories, SharedSettings.swiftgramHideStories);
+
+        addSwiftGramHeader(layout, context, getString(R.string.SwiftGramSectionNotifications));
+        addSwiftGramToggle(layout, context, R.string.SwiftGramHideAccountInNotifications, SharedSettings.swiftgramHideAccountInNotifications);
+        addSwiftGramToggle(layout, context, R.string.SwiftGramDisableMentions, SharedSettings.swiftgramDisableMentions);
+
+        addSwiftGramHeader(layout, context, getString(R.string.SwiftGramSectionMessages));
+        addSwiftGramToggle(layout, context, R.string.SwiftGramSecondsInMessages, SharedSettings.swiftgramSecondsInMessages);
+        addSwiftGramToggle(layout, context, R.string.SwiftGramHideReactions, SharedSettings.swiftgramHideReactions);
+
+        addSwiftGramHeader(layout, context, getString(R.string.SwiftGramSectionCalls));
+        addSwiftGramToggle(layout, context, R.string.SwiftGramCallConfirmation, SharedSettings.swiftgramCallConfirmation);
+
+        addSwiftGramHeader(layout, context, getString(R.string.SwiftGramSectionAccount));
+        addSwiftGramToggle(layout, context, R.string.SwiftGramHidePhone, SharedSettings.swiftgramHidePhone);
+
+        addSwiftGramHeader(layout, context, getString(R.string.SwiftGramSectionOther));
+        addSwiftGramToggle(layout, context, R.string.SwiftGramNoAds, SharedSettings.swiftgramNoAds);
+
+        ScrollView scrollView = new ScrollView(context);
+        scrollView.setBackgroundColor(Theme.getColor(Theme.key_windowBackgroundWhite));
+        scrollView.addView(layout, LayoutHelper.createScroll(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT, Gravity.TOP | Gravity.LEFT));
+
         AlertDialog.Builder builder = new AlertDialog.Builder(context, resourceProvider);
         builder.setTitle(getString(R.string.SwiftGram));
-        builder.setView(layout);
+        builder.setView(scrollView);
         builder.setPositiveButton(getString(R.string.Done), null);
         showDialog(builder.create());
+    }
+
+    private void addSwiftGramHeader(LinearLayout layout, Context context, String text) {
+        TextView header = new TextView(context);
+        header.setText(text);
+        header.setTextSize(13);
+        header.setTypeface(AndroidUtilities.getTypeface("fonts/rmedium.ttf"));
+        header.setTextColor(Theme.getColor(Theme.key_windowBackgroundWhiteBlueHeader));
+        header.setPadding(dp(21), dp(15), dp(21), dp(8));
+        layout.addView(header, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
+    }
+
+    private void addSwiftGramToggle(LinearLayout layout, Context context, int textRes, BooleanSetting setting) {
+        TextCheckCell cell = new TextCheckCell(context);
+        cell.setTextAndCheck(getString(textRes), setting.get(), true);
+        cell.setOnClickListener(v -> cell.setChecked(setting.toggle()));
+        layout.addView(cell, LayoutHelper.createLinear(LayoutHelper.MATCH_PARENT, LayoutHelper.WRAP_CONTENT));
     }
 
     private boolean onLongClick(UItem item, View view, int position, float x, float y) {

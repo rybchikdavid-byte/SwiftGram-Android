@@ -124,6 +124,7 @@ import org.telegram.ui.Components.blur3.drawable.color.BlurredBackgroundColorPro
 import org.telegram.ui.Components.blur3.drawable.color.BlurredBackgroundProvider;
 import org.telegram.ui.Components.blur3.drawable.color.impl.BlurredBackgroundProviderImpl;
 import org.telegram.utils.glass.source.GlassSourceBitmap;
+import org.telegram.utils.settings.SharedSettings;
 import org.telegram.ui.Components.blur3.utils.Blur3Utils;
 import org.telegram.ui.Wallet.WalletSendEnterAmount;
 import org.telegram.ui.recyclerview.LinearSmoothScrollerCustom;
@@ -671,6 +672,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
     private int userInfoRow;
     private int channelInfoRow;
     private int usernameRow;
+    private int swiftgramIdRow;
     private int notificationsDividerRow;
     private int notificationsRow;
     private int bizHoursRow;
@@ -4308,7 +4310,11 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 return;
             }
             listView.stopScroll();
-            if (position == affiliateRow) {
+            if (position == swiftgramIdRow) {
+                if (AndroidUtilities.addToClipboard(getSwiftgramProfileId())) {
+                    BulletinFactory.of(ProfileActivity.this).createCopyBulletin(LocaleController.getString(R.string.SwiftGramProfileIDCopied)).show();
+                }
+            } else if (position == affiliateRow) {
                 TLRPC.User user = getMessagesController().getUser(userId);
                 if (userInfo != null && userInfo.starref_program != null) {
                     final long selfId = getUserConfig().getClientUserId();
@@ -7082,6 +7088,16 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             return true;
         });
         NotificationCenter.getGlobalInstance().postNotificationName(NotificationCenter.closeSearchByActiveAction);
+    }
+
+    private String getSwiftgramProfileId() {
+        if (userId != 0) {
+            return String.valueOf(userId);
+        }
+        if (currentChat != null && ChatObject.isChannel(currentChat) && !currentChat.megagroup) {
+            return "-100" + chatId;
+        }
+        return String.valueOf(chatId);
     }
 
     private void onWriteButtonClick() {
@@ -10884,6 +10900,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
         locationRow = -1;
         channelInfoRow = -1;
         usernameRow = -1;
+        swiftgramIdRow = -1;
         settingsTimerRow = -1;
         settingsKeyRow = -1;
         notificationsDividerRow = -1;
@@ -11078,6 +11095,10 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                 if (user != null && username != null) {
                     usernameRow = rowCount++;
                 }
+                if (SharedSettings.swiftgramShowProfileID.get()) {
+                    // Swiftgram: Settings.ShowProfileID
+                    swiftgramIdRow = rowCount++;
+                }
                 if (userInfo != null) {
                     if (userInfo.birthday != null) {
                         birthdayRow = rowCount++;
@@ -11249,6 +11270,10 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                     notificationsDividerRow = rowCount++;
                 }
                 notificationsRow = rowCount++;
+                if (SharedSettings.swiftgramShowProfileID.get()) {
+                    // Swiftgram: Settings.ShowProfileID
+                    swiftgramIdRow = rowCount++;
+                }
             }
             if (rowCount > 0) {
                 infoSectionRow = rowCount++;
@@ -13669,6 +13694,8 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
                         }
                         isFragmentPhoneNumber = phoneNumber != null && phoneNumber.matches("888\\d{8}");
                         detailCell.setTextAndValue(text, LocaleController.getString(isFragmentPhoneNumber ? R.string.AnonymousNumber : R.string.PhoneMobile), false);
+                    } else if (position == swiftgramIdRow) {
+                        detailCell.setTextAndValue(getSwiftgramProfileId(), LocaleController.getString(R.string.SwiftGramProfileID), false);
                     } else if (position == noteRow) {
                         final TLRPC.UserFull userInfo = getMessagesController().getUserFull(userId);
                         if (userInfo == null) return;
@@ -14487,7 +14514,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             if (position == infoHeaderRow || position == membersHeaderRow || position == settingsSectionRow2 ||
                     position == numberSectionRow || position == helpHeaderRow || position == debugHeaderRow || position == botPermissionsHeader) {
                 return VIEW_TYPE_HEADER;
-            } else if (position == phoneRow || position == locationRow || position == numberRow || position == birthdayRow) {
+            } else if (position == phoneRow || position == locationRow || position == numberRow || position == birthdayRow || position == swiftgramIdRow) {
                 return VIEW_TYPE_TEXT_DETAIL;
             } else if (position == usernameRow || position == setUsernameRow) {
                 return VIEW_TYPE_TEXT_DETAIL_MULTILINE;
@@ -15817,6 +15844,7 @@ public class ProfileActivity extends BaseFragment implements NotificationCenter.
             put(++pointer, userInfoRow, sparseIntArray);
             put(++pointer, channelInfoRow, sparseIntArray);
             put(++pointer, usernameRow, sparseIntArray);
+            put(++pointer, swiftgramIdRow, sparseIntArray);
             put(++pointer, notificationsDividerRow, sparseIntArray);
             put(++pointer, reportDividerRow, sparseIntArray);
             put(++pointer, notificationsRow, sparseIntArray);

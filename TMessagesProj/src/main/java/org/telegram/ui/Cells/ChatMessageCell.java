@@ -111,6 +111,7 @@ import org.telegram.messenger.BotInlineKeyboard;
 import org.telegram.messenger.ChatMessageSharedResources;
 import org.telegram.messenger.ChatObject;
 import org.telegram.utils.code.highlight.CodeHighlighting;
+import org.telegram.utils.settings.SharedSettings;
 import org.telegram.utils.twidget.WidgetSandboxTheme;
 import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.DialogObject;
@@ -15559,15 +15560,23 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
      * time it is (an album's), `editDate` the latest edit. Also a widget's estimate of the corner its time takes
      * before a cell lays it out (RichWidgetBlock#estimateSafeArea).
      */
+    private static String swiftGramTime(long dateSeconds) {
+        // Swiftgram: Settings.secondsInMessages
+        if (SharedSettings.swiftgramSecondsInMessages.get()) {
+            return LocaleController.getInstance().getFormatterDayWithSeconds().format(dateSeconds * 1000);
+        }
+        return LocaleController.getInstance().getFormatterDay().format(dateSeconds * 1000);
+    }
+
     public static String timeString(MessageObject current, MessageObject message, boolean edited, int editDate) {
         if (current.notime || current.isSponsored() || current.isQuickReply() || current.isWelcomeMessage()) {
             return "";
         } else if (current.scheduled && current.messageOwner.date == 0x7FFFFFFE) {
             return "";
         } else if (current.realDate != 0) {
-            return LocaleController.formatSmallDateChat(current.realDate) + ", " + LocaleController.getInstance().getFormatterDay().format((long) (current.realDate) * 1000);
+            return LocaleController.formatSmallDateChat(current.realDate) + ", " + swiftGramTime(current.realDate);
         } else if (current.isRepostPreview) {
-            return LocaleController.formatSmallDateChat(message.messageOwner.date) + ", " + LocaleController.getInstance().getFormatterDay().format((long) (message.messageOwner.date) * 1000);
+            return LocaleController.formatSmallDateChat(message.messageOwner.date) + ", " + swiftGramTime(message.messageOwner.date);
         } else if (edited) {
             if (AppGlobalConfig.getInstance(current.currentAccount).messagePrimaryEditedDate.get()) {
                 if (editDate == 0 && current.isEditing()) {
@@ -15575,7 +15584,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
                 }
                 return LocaleController.formatPmEditedDate(editDate);
             }
-            return getString(R.string.EditedMessage) + " " + LocaleController.getInstance().getFormatterDay().format((long) (message.messageOwner.date) * 1000);
+            return getString(R.string.EditedMessage) + " " + swiftGramTime(message.messageOwner.date);
         } else if (current.isSaved && current.messageOwner.fwd_from != null && (current.messageOwner.fwd_from.date != 0 || current.messageOwner.fwd_from.saved_date != 0)
                 // A widget keeps its time alone in Saved Messages: the pill over its corner stays short.
                 && !(MessageObject.getMedia(current.messageOwner) instanceof TLRPC.TL_messageMediaWidget)) {
@@ -15585,7 +15594,7 @@ public class ChatMessageCell extends BaseCell implements SeekBar.SeekBarDelegate
             }
             return LocaleController.formatSeenDate(date);
         }
-        return LocaleController.getInstance().getFormatterDay().format((long) (message.messageOwner.date) * 1000);
+        return swiftGramTime(message.messageOwner.date);
     }
 
     void measureTime(MessageObject messageObject) {

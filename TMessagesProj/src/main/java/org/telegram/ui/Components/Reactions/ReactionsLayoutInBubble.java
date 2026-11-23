@@ -60,6 +60,7 @@ import org.telegram.ui.Components.CounterView;
 import org.telegram.ui.Components.CubicBezierInterpolator;
 import org.telegram.ui.Components.RLottieDrawable;
 import org.telegram.ui.Stars.StarsReactionsSheet;
+import org.telegram.utils.settings.SharedSettings;
 
 import java.util.ArrayList;
 import java.util.Collections;
@@ -167,6 +168,10 @@ public class ReactionsLayoutInBubble {
         this.isSmall = isSmall;
         this.tags = isTag;
         this.messageObject = messageObject;
+        if (SharedSettings.swiftgramHideReactions.get()) {
+            // Swiftgram: Settings.HideReactions
+            messageObject = null;
+        }
         ArrayList<ReactionButton> oldButtons = new ArrayList<>(reactionButtons);
         hasUnreadReactions = false;
         hasPaidReaction = false;

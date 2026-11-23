@@ -270,6 +270,7 @@ import org.telegram.ui.community.CommunityPendingRequestsActivity;
 import org.telegram.ui.community.CommunityUtils;
 import org.telegram.ui.community.cells.CommunityRequestsCell;
 import org.telegram.utils.glass.GlassEngine;
+import org.telegram.utils.settings.SharedSettings;
 import org.telegram.utils.glass.positions.GlassPositionsMerger;
 
 import java.io.File;
@@ -12427,7 +12428,11 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         }
         boolean onlySelfStories = !isArchive() && getStoriesController().hasOnlySelfStories();
         boolean newVisibility;
-        if (communityId != 0) {
+        if (SharedSettings.swiftgramHideStories.get()) {
+            // Swiftgram: Settings.Stories.Hide
+            onlySelfStories = false;
+            newVisibility = false;
+        } else if (communityId != 0) {
             newVisibility = false;
         } else if (isArchive()) {
             newVisibility = !getStoriesController().getHiddenList().isEmpty();
