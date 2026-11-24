@@ -10,21 +10,34 @@ Telegram Messenger LLP.
 
 ## Features
 
-- Up to **10 accounts** in one app
-- **Sponsored messages disabled**
-- **Notification filters**:
-  - silence mentions and replies in group chats
-  - hide notifications for messages containing your own keywords
-- Own package name, icon and signature, so it installs next to Telegram
+SwiftGram Android is a port of the real
+[SwiftGram for iOS](https://github.com/Swiftgram/Telegram-iOS): the feature
+names and behaviour are taken from its open source, then rebuilt on top of the
+official Telegram Android engine. Swift code itself cannot run on Android.
 
-The feature settings live in **Settings → SwiftGram**.
+Ported in 1.0.2:
+
+- **Chat list** — message filter by keywords (`Settings.MessageFilter`)
+- **Profiles** — profile ID row with tap-to-copy (`Settings.ShowProfileID`)
+- **Stories** — hide the stories bar (`Settings.Stories.Hide`)
+- **Notifications** — hide the account name (`Settings.HideAccountInNotifications`),
+  silence mentions and replies
+- **Messages** — seconds in message time (`Settings.secondsInMessages`),
+  hide reactions under messages (`Settings.HideReactions`)
+- **Calls** — confirmation before a call (`Settings.CallConfirmation`)
+- **Account** — hide the phone number in the settings UI
+  (`Settings.HidePhoneInSettingsUI`)
+- **Other** — sponsored messages disabled
+
+The feature settings live in **Settings → SwiftGram**, grouped into the same
+sections as the iOS app: Chat List, Profiles, Stories, Notifications, Messages,
+Calls, Account, Other.
 
 ## Roadmap
 
-SwiftGram for iOS is written in Swift and UIKit, so its code cannot be compiled
-for Android. Instead, each SwiftGram feature is rebuilt on top of the official
-Telegram Android code. More features (app icon picker, chat filters, message
-translation, etc.) will follow in later releases.
+More features from the SwiftGram iOS settings will follow: compact chat list,
+small reactions, custom folder tabs, translation backend, voice-to-text
+backend, upload/download boost and the context-menu editor.
 
 ## Building
 

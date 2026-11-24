@@ -12426,13 +12426,24 @@ public class DialogsActivity extends BaseFragment implements NotificationCenter.
         if (StoryRecorder.isVisible() || (getLastStoryViewer() != null && getLastStoryViewer().isFullyVisible())) {
             animated = false;
         }
-        boolean onlySelfStories = !isArchive() && getStoriesController().hasOnlySelfStories();
-        boolean newVisibility;
         if (SharedSettings.swiftgramHideStories.get()) {
             // Swiftgram: Settings.Stories.Hide
-            onlySelfStories = false;
-            newVisibility = false;
-        } else if (communityId != 0) {
+            if (storiesVisibilityAnimator2 != null) {
+                storiesVisibilityAnimator2.cancel();
+                storiesVisibilityAnimator2 = null;
+            }
+            hasOnlySlefStories = false;
+            dialogStoriesCellVisible = false;
+            progressToDialogStoriesCell = 0f;
+            dialogStoriesCell.setVisibility(View.GONE);
+            if (fragmentView != null) {
+                fragmentView.invalidate();
+            }
+            return;
+        }
+        boolean onlySelfStories = !isArchive() && getStoriesController().hasOnlySelfStories();
+        boolean newVisibility;
+        if (communityId != 0) {
             newVisibility = false;
         } else if (isArchive()) {
             newVisibility = !getStoriesController().getHiddenList().isEmpty();

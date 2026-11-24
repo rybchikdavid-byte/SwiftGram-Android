@@ -65,6 +65,7 @@ import org.telegram.messenger.ApplicationLoader;
 import org.telegram.messenger.ChatObject;
 import org.telegram.messenger.ChatThemeController;
 import org.telegram.utils.code.highlight.CodeHighlighting;
+import org.telegram.utils.settings.SharedSettings;
 import org.telegram.messenger.ContactsController;
 import org.telegram.messenger.DialogObject;
 import org.telegram.messenger.DownloadController;
@@ -4802,6 +4803,10 @@ public class DialogCell extends BaseCell implements StoriesListPlaceProvider.Ava
                     dp(48), dp(48), Gravity.CENTER);
                 DrawableUtils.drawCommunityCardDrawable(canvas, Theme.dialogs_communityCardsDrawable,
                     avatarImage.getCenterX(), avatarImage.getCenterY(), dp(48));
+                avatarImage.draw(canvas);
+            } else if (SharedSettings.swiftgramHideStories.get()) {
+                // Swiftgram: Settings.Stories.Hide
+                avatarImage.setImageCoords(storyParams.originalAvatarRect);
                 avatarImage.draw(canvas);
             } else {
                 storyParams.drawHiddenStoriesAsSegments = isShareToStoryCell || currentDialogFolderId != 0;
